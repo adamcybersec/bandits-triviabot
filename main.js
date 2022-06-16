@@ -6,26 +6,28 @@ const BaseUrl = 'https://someurl-fixme';
 const Key = 'ADD A KEY';
 
 // setup serpApi
-const search = new SerpApi.GoogleSearch("062dce0330556c852218af3807dd0b61ad6ba2115b9f868bf7b9678434e3d330");
+const search = new SerpApi.GoogleSearch("758608a4a6bd7636298374e041b3e977c1be4c79501654f00cb929834865cc4b");
 
 // QUERY Google using SerpApi
-fetchSearchResults = (questionString) => {
+fetchSearchResults = (questionModel) => {
   const params = {
-    q: questionString,
+    q: questionModel.q,
     hl: "en",
     gl: "us"
   };
   
   const callback = function(data) {
-    //console.log(data);
-    fuzzyMatch(questionString,data)
+    //Todo
+    //carve out the answers, fuzzy match each potential answer against the results
+    //identify the highest fuzzy match score, use that answer to send back to Tom
+    fuzzyMatch(questionModel,data)
   };
   
   // Show result as JSON
   search.json(params, callback);
 }
 
-fuzzyMatch = (questionString,searchResults) => {
+fuzzyMatch = (questionModel,searchResults) => {
   const options = {
     includeScore: true,
     // Search in `author` and in `tags` array
@@ -34,20 +36,19 @@ fuzzyMatch = (questionString,searchResults) => {
 
   const fuse = new Fuse(searchResults.related_searches, options)
 
-  const result = fuse.search(potentialAnswers);
+  //ToDo fuzzy each of the potential answers
+  const result = fuse.search(questionModel.q);
   
-  //console.log(questionString)
+  //console.log(q)
   //console.log(searchResults)
   //console.log(fuse)
   console.log(result)
 }
 
-fetchSearchResults();
-
 async function main() {
-  var question = await GetCurrentQuestion();
+  var questionModel = await GetCurrentQuestion();
 
-  fetchSearchResults(); 
+  fetchSearchResults(questionModel); 
 }
 
 
@@ -80,7 +81,6 @@ async function GetCurrentQuestion() {
     console.error(error);
   }
 }
-
 
 async function GetPrevQuestion(num) {
   try {

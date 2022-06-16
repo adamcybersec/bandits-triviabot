@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "axios": "^0.27.2",
     "fuse.js": "^6.6.2",
     "google-search-results-nodejs": "^2.1.0"
   }

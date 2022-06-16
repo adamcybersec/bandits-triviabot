@@ -5,10 +5,7 @@ const Fuse = require('fuse.js') // npm package for fuzzy matching
 const search = new SerpApi.GoogleSearch("062dce0330556c852218af3807dd0b61ad6ba2115b9f868bf7b9678434e3d330");
 
 // QUERY Google using SerpApi
-var questionString = "A thousand paper what?"
-
-fetchSearchResults = () => {
-
+fetchSearchResults = (questionString) => {
   const params = {
     q: questionString,
     hl: "en",
@@ -16,8 +13,8 @@ fetchSearchResults = () => {
   };
   
   const callback = function(data) {
-    console.log(data);
-    //fuzzyMatch(questionString,data)
+    //console.log(data);
+    fuzzyMatch(questionString,data)
   };
   
   // Show result as JSON
@@ -25,9 +22,19 @@ fetchSearchResults = () => {
 }
 
 fuzzyMatch = (questionString,searchResults) => {
-  const fuse = new Fuse(searchResults, {keys: []})
+  const options = {
+    includeScore: true,
+    // Search in `author` and in `tags` array
+    keys: ['query']
+  }
 
-  const result = fuse.search(questionString);
+  const fuse = new Fuse(searchResults.related_searches, options)
+
+  const result = fuse.search(potentialAnswers);
+  
+  //console.log(questionString)
+  //console.log(searchResults)
+  //console.log(fuse)
   console.log(result)
 }
 

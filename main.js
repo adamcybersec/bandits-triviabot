@@ -1,5 +1,9 @@
 const SerpApi = require('google-search-results-nodejs'); // npm package for serpApi
 const Fuse = require('fuse.js') // npm package for fuzzy matching
+const axios = require('axios').default;
+
+const BaseUrl = 'https://someurl-fixme';
+const Key = 'ADD A KEY';
 
 // setup serpApi
 const search = new SerpApi.GoogleSearch("062dce0330556c852218af3807dd0b61ad6ba2115b9f868bf7b9678434e3d330");
@@ -39,3 +43,60 @@ fuzzyMatch = (questionString,searchResults) => {
 }
 
 fetchSearchResults();
+
+async function main() {
+  var question = await GetCurrentQuestion();
+
+  fetchSearchResults(); 
+}
+
+
+(async () => {
+  console.log('starting...');
+  await main();
+})();
+
+
+
+
+
+
+async function GetCurrentQuestion() {
+  try {
+    //const response = await axios.get(`${BaseUrl}/currentQuestion`);
+    //console.log(response);
+    //return response.data;
+
+    return {
+      q: 'A thousand paper what?',
+      a: 'Cranes',
+      b: 'Flowers', 
+      c: 'Monkeys',
+      d: 'Cuts',
+      expiry: 2000
+    }
+
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+async function GetPrevQuestion(num) {
+  try {
+    const response = await axios.get(`${BaseUrl}/question?q=${num}`);
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function PostAnswer(questionNumber, answer) {
+  try {
+    const response = await axios.post(`${BaseUrl}/question?q=${num}`, answer);
+    console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+}

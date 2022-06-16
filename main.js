@@ -30,19 +30,31 @@ fetchSearchResults = (questionModel) => {
 fuzzyMatch = (questionModel,searchResults) => {
   const options = {
     includeScore: true,
+    shouldSort: true,
     // Search in `author` and in `tags` array
     keys: ['query']
   }
 
-  const fuse = new Fuse(searchResults.related_searches, options)
+  //console.log('----- search results=====');
+  //console.log(searchResults.related_searches);
 
-  //ToDo fuzzy each of the potential answers
-  const result = fuse.search(questionModel.q);
-  
-  //console.log(q)
-  //console.log(searchResults)
-  //console.log(fuse)
-  console.log(result)
+  const fuse = new Fuse(searchResults.related_searches.map(x => x.query), options);
+
+  var scores = {};
+  minScore =1;
+  answer = '';
+  var answerKeys = ['a','b','c','d'];
+  for (answerKey of answerKeys) {
+    console.log('answer: '+answerKey+': '+questionModel[answerKey]);
+    const result = fuse.search(questionModel[answerKey]);
+    if (result.length > 0) {
+      if (result[0].score < minScore) {
+        minScore = result[0].score;
+        answer = answerKey;
+      }
+    }
+  }
+  console.log('ANSWER: '+answer);
 }
 
 async function main() {
@@ -70,8 +82,8 @@ async function GetCurrentQuestion() {
 
     return {
       q: 'A thousand paper what?',
-      a: 'Cranes',
-      b: 'Flowers', 
+      b: 'Cranes',
+      a: 'Flowers', 
       c: 'Monkeys',
       d: 'Cuts',
       expiry: 2000

@@ -2,8 +2,8 @@ const SerpApi = require('google-search-results-nodejs'); // npm package for serp
 const Fuse = require('fuse.js') // npm package for fuzzy matching
 const axios = require('axios').default;
 
-const BaseUrl = 'https://someurl-fixme';
-const Key = 'ADD A KEY';
+const BaseUrl = 'http://20.102.89.221:3000';
+const Key = 'abc123';
 
 // setup serpApi
 const search = new SerpApi.GoogleSearch("758608a4a6bd7636298374e041b3e977c1be4c79501654f00cb929834865cc4b");
@@ -11,7 +11,7 @@ const search = new SerpApi.GoogleSearch("758608a4a6bd7636298374e041b3e977c1be4c7
 // QUERY Google using SerpApi
 fetchSearchResults = (questionModel) => {
   const params = {
-    q: questionModel.q,
+    q: questionModel.question,
     hl: "en",
     gl: "us"
   };
@@ -45,8 +45,8 @@ fuzzyMatch = (questionModel,searchResults) => {
   answer = '';
   var answerKeys = ['a','b','c','d'];
   for (answerKey of answerKeys) {
-    console.log('answer: '+answerKey+': '+questionModel[answerKey]);
-    const result = fuse.search(questionModel[answerKey]);
+    console.log('answer: '+answerKey+': '+questionModel.options[answerKey]);
+    const result = fuse.search(questionModel.options[answerKey]);
     if (result.length > 0) {
       if (result[0].score < minScore) {
         minScore = result[0].score;
@@ -55,12 +55,20 @@ fuzzyMatch = (questionModel,searchResults) => {
     }
   }
   console.log('ANSWER: '+answer);
+  PostAnswer(questionModel.id, answer);
 }
 
 async function main() {
-  var questionModel = await GetCurrentQuestion();
+  while(true) { // go forever!
 
-  fetchSearchResults(questionModel); 
+    for (i=0; i<=2; i++) {
+      var questionModel = await getQuestion(i);
+      console.log('question', questionModel);
+      fetchSearchResults(questionModel); 
+    }
+  }
+
+  
 }
 
 
@@ -71,7 +79,24 @@ async function main() {
 
 
 
-
+async function getQuestion(questionIndex) {
+  console.log('waiting for question '+(questionIndex+1));
+  let response = await axios.get(`${BaseUrl}/currentQuestion?tok=${Key}`);
+  while (response.data.current != questionIndex) {
+    // wait 1 secs
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      response = await axios.get(`${BaseUrl}/currentQuestion?tok=${Key}`);
+    } catch (err) {
+      console.error('http error');
+    }
+    
+  } 
+  //console.log('getting question '+questionIndex);
+  //console.log();
+  let questionResponse = await axios.get(`${BaseUrl}/question?tok=${Key}&q=${response.data.current}`);
+  return questionResponse.data;
+}
 
 
 async function GetCurrentQuestion() {
@@ -94,20 +119,13 @@ async function GetCurrentQuestion() {
   }
 }
 
-async function GetPrevQuestion(num) {
-  try {
-    const response = await axios.get(`${BaseUrl}/question?q=${num}`);
-    console.log(response);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-}
 
-async function PostAnswer(questionNumber, answer) {
+
+async function PostAnswer(questionIndex, answer) {
   try {
-    const response = await axios.post(`${BaseUrl}/question?q=${num}`, answer);
-    console.log(response);
+    const response = await axios.post(`${BaseUrl}/question?tok=${Key}&q=${questionIndex}&a=${answer}`);
+
+    console.log(`answer post ${questionIndex}:${answer}`,response);
   } catch (error) {
     console.error(error);
   }
